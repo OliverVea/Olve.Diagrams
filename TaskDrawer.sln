@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StoryDrawer", "StoryDrawer\StoryDrawer.csproj", "{A74FAB39-150F-4A5F-A576-EBE771E0B553}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StoryDrawer.Tests", "StoryDrawer.Tests\StoryDrawer.Tests.csproj", "{F9B3E6C6-D541-41AB-8F6A-698B95DFCBAD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StoryDrawer.CLI", "StoryDrawer.CLI\StoryDrawer.CLI.csproj", "{6BB85390-C788-48BA-BD0B-D604202A0A6C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "repo", "repo", "{DFA4A91F-597D-4619-B5B1-C2591CEE380B}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A74FAB39-150F-4A5F-A576-EBE771E0B553}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A74FAB39-150F-4A5F-A576-EBE771E0B553}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A74FAB39-150F-4A5F-A576-EBE771E0B553}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A74FAB39-150F-4A5F-A576-EBE771E0B553}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9B3E6C6-D541-41AB-8F6A-698B95DFCBAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9B3E6C6-D541-41AB-8F6A-698B95DFCBAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9B3E6C6-D541-41AB-8F6A-698B95DFCBAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9B3E6C6-D541-41AB-8F6A-698B95DFCBAD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6BB85390-C788-48BA-BD0B-D604202A0A6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6BB85390-C788-48BA-BD0B-D604202A0A6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6BB85390-C788-48BA-BD0B-D604202A0A6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6BB85390-C788-48BA-BD0B-D604202A0A6C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
