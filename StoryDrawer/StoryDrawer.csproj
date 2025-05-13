@@ -7,9 +7,10 @@
     </PropertyGroup>
     
     <ItemGroup>
+        <PackageReference Include="Docker.DotNet" Version="3.125.15" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
-        <PackageReference Include="Olve.Utilities" Version="0.20.1" />
-        <PackageReference Include="Olve.Operations" Version="0.20.1" />
+        <PackageReference Include="Olve.Utilities" Version="0.20.2" />
+        <PackageReference Include="Olve.Operations" Version="0.20.2" />
         <PackageReference Include="OneOf.SourceGenerator" Version="3.0.271" />
         <PackageReference Include="Scriban" Version="6.2.1" />
     </ItemGroup>
