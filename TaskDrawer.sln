@@ -9,6 +9,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "repo", "repo", "{DFA4A91F-597D-4619-B5B1-C2591CEE380B}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		.github\workflows\deploy-ui.yml = .github\workflows\deploy-ui.yml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskDrawer.UI", "TaskDrawer.UI\TaskDrawer.UI.csproj", "{1961A4C6-38CD-4344-A82B-6F3D3B568F92}"
