@@ -34,4 +34,22 @@ public static class CommandHelper
 
         return 0;
     }
+
+    public static async Task<int> ExecuteOperationAsync<TOperation, TRequest>(TOperation operation, TRequest request,
+        CancellationToken ct = default)
+        where TOperation : IAsyncOperation<TRequest>
+    {
+        var result = await operation.ExecuteAsync(request, ct);
+        if (result.TryPickProblems(out var problems))
+        {
+            foreach (var problem in problems)
+            {
+                AnsiConsole.WriteLine(problem.ToDebugString());
+            }
+
+            return -1;
+        }
+
+        return 0;
+    }
 }

@@ -2,6 +2,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console.Cli;
+using TaskDrawer.Docker;
 
 namespace TaskDrawer.CLI;
 
@@ -14,6 +15,8 @@ public class Program
 
         serviceCollection.AddTransient<TaskFileToGraphImageOperation>();
         serviceCollection.AddTransient<WatchTaskFileToGraphImageOperation>();
+        serviceCollection.AddTransient<RenderMermaidOperation>();
+        serviceCollection.AddTransient<DockerRunOperation>();
 
         CommandHelper.SetServiceProvider(serviceCollection.BuildServiceProvider());
 

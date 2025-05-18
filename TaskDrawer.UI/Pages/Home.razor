@@ -1,0 +1,27 @@
+@inject NavigationManager NavigationManager
+@page "/"
+
+<PageTitle>Diagrams</PageTitle>
+
+<diagrams>
+    <diagrams-title>
+        Hello, world!
+    </diagrams-title>
+    @foreach (var diagramLink in DiagramLinks)
+    {
+        <diagram-link @onclick="() => NavigationManager.NavigateTo(diagramLink.Link)">
+            <diagram-title>@diagramLink.Title</diagram-title>
+            <diagram-description>@diagramLink.Description</diagram-description>
+        </diagram-link>
+    }
+</diagrams>
+
+@code {
+
+    private readonly record struct DiagramLink(string Title, string Description, string Link);
+
+    private static readonly DiagramLink[] DiagramLinks =
+    [
+        new("Flowchart", "A simple flowchart", "/flow")
+    ];
+}

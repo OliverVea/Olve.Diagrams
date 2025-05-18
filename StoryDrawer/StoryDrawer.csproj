@@ -7,7 +7,6 @@
     </PropertyGroup>
     
     <ItemGroup>
-        <PackageReference Include="Docker.DotNet" Version="3.125.15" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
         <PackageReference Include="Olve.Utilities" Version="0.20.2" />
         <PackageReference Include="Olve.Operations" Version="0.20.2" />

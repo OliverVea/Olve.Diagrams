@@ -4,13 +4,13 @@ using Olve.Results;
 
 namespace TaskDrawer.CLI;
 
-public class WatchTaskFileToGraphImageOperation(TaskFileToGraphImageOperation taskFileToGraphImageOperation) : IOperation<WatchTaskFileToGraphImageOperation.Request>
+public class WatchTaskFileToGraphImageOperation(TaskFileToGraphImageOperation taskFileToGraphImageOperation) : IAsyncOperation<WatchTaskFileToGraphImageOperation.Request>
 {
     public record Request(IPath InputPath, IPath OutputPath, IPath? MermaidPath = null, TimeSpan? Interval = null);
 
     private bool _changed = true;
     
-    public Result Execute(Request request)
+    public async Task<Result> ExecuteAsync(Request request, CancellationToken ct)
     {
         if (request.InputPath.Name is not { } name)
         {
@@ -61,7 +61,7 @@ public class WatchTaskFileToGraphImageOperation(TaskFileToGraphImageOperation ta
         return Result.Success();
     }
     
-    private void WorkerMethod(Request request)
+    private async System.Threading.Tasks.Task WorkerMethod(Request request)
     {
         var interval = request.Interval ?? TimeSpan.FromMilliseconds(50);
         TaskFileToGraphImageOperation.Request refreshRequest =
@@ -73,7 +73,7 @@ public class WatchTaskFileToGraphImageOperation(TaskFileToGraphImageOperation ta
             {
                 _changed = false;
                 
-                var result = taskFileToGraphImageOperation.Execute(refreshRequest);
+                var result = await taskFileToGraphImageOperation.ExecuteAsync(refreshRequest);
                 if (result.TryPickProblems(out var problems))
                 {
                     foreach (var problem in problems)

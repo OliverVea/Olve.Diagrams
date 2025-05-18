@@ -1,0 +1,46 @@
+diagrams-title {
+    grid-column: 1 / span 2;
+    color: white;
+    font-size: large;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+diagrams {
+    width: 100%;
+    padding-top: 10%;
+    display: grid;
+    grid-template-columns: 30% 30%;
+    justify-content: center;
+    gap: 8px;
+}
+
+diagram-link {
+    padding: 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    background-color: #424242;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+diagram-link:hover {
+    background-color: #525252;
+}
+
+diagram-title {
+    color: white;
+    font-weight: bold;
+    font-size: large;
+}
+
+diagram-description {
+    color: #aaa;
+}
+
+diagram-link:hover diagram-description {
+    color: #ddd;
+}

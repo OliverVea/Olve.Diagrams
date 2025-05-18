@@ -1,90 +1,75 @@
 using System.Diagnostics;
-using Docker.DotNet;
-using Docker.DotNet.Models;
+using Olve.Operations;
 using Olve.Paths;
 using Olve.Results;
-using Olve.Utilities.Assertions;
+using TaskDrawer.Docker;
 
 namespace TaskDrawer;
 
-public static class MermaidRenderer
+public class RenderMermaidOperation(DockerRunOperation dockerRunOperation) : IAsyncOperation<RenderMermaidOperation.Request>
 {
     private const string Theme = "dark";
     private const string BackgroundColor = "transparent";
     
-    public static async Task<Result> RenderMermaidAsync(IPath mermaidSourceInputPath, IPath mermaidImageOutputPath, bool overwrite = false)
+    private static readonly DockerImage MermaidCliImage = new("ghcr.io/mermaid-js/mermaid-cli/mermaid-cli");
+    private static readonly IPurePath DockerSourcePath = Olve.Paths.Path.CreatePure("/data/input.mmd");
+    private static readonly IPurePath DockerOutputPath = Olve.Paths.Path.CreatePure("/data/output.svg");
+
+    public record Request(IPath SourcePath, IPath OutputPath, bool Overwrite = false);
+    
+    public async Task<Result> ExecuteAsync(Request request, CancellationToken ct = default)
     {
-        if (!mermaidSourceInputPath.Exists())
+        if (!request.SourcePath.Exists())
         {
-            return new ResultProblem("Mermaid source input path does not exist: '{0}'", mermaidSourceInputPath);
+            return new ResultProblem("Mermaid source input path does not exist: '{0}'", request.SourcePath);
         }
 
-        if (mermaidImageOutputPath.Exists())
+        if (request.OutputPath.Exists())
         {
-            if (overwrite)
+            if (request.Overwrite)
             {
                 //File.Delete(mermaidImageOutputPath.Path);
             }
             else
             {
-                return new ResultProblem("Mermaid image output path already exists: '{0}'", mermaidImageOutputPath);
+                return new ResultProblem("Mermaid image output path already exists: '{0}'", request.OutputPath);
             }
         }
-        
-
-        var workingDir = mermaidSourceInputPath.Parent;
-        
-        Console.WriteLine($"Full file path: {mermaidSourceInputPath.Path}");
-        Console.WriteLine($"Working dir: {workingDir.Path}");
-        Console.WriteLine($"Expecting: {(workingDir / (mermaidSourceInputPath.Name ?? string.Empty)).Path}");
-        
-        var dockerArgs = $"run --rm -v \"{mermaidSourceInputPath.Path}:/data/input.mmd\" ghcr.io/mermaid-js/mermaid-cli/mermaid-cli " +
-                         $"-i \"diagram.mmd\" -o \"/data/{mermaidImageOutputPath.Name}\" " +
-                         $"-t {Theme} -b {BackgroundColor}";
-
-        Console.WriteLine("docker " + dockerArgs);
-        
-        try
+        else
         {
-            var psi = new ProcessStartInfo("docker")
+            Directory.CreateDirectory(request.OutputPath.Parent.Path);
+            await File.Create(request.OutputPath.Path).DisposeAsync();
+            
+#if !WINDOWS
+            // on Linux: make it 0666 so anyone (including container users) can open it
+            var psi = new ProcessStartInfo("chmod", $"666 \"{request.OutputPath.Path}\"")
             {
-                Arguments = dockerArgs,
-                UseShellExecute = false,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true
+                UseShellExecute = false
             };
 
-            var process = Process.Start(psi);
-            process?.WaitForExit();
-
-            if (process is not { ExitCode: 0 })
-            {
-                var errorOutput = process?.StandardError.ReadToEnd();
-                var output = process?.StandardOutput.ReadToEnd();
-                var errorMessage = string.IsNullOrWhiteSpace(errorOutput) ? output : errorOutput;
-
-                if (!string.IsNullOrWhiteSpace(errorMessage))
-                {
-                    return new ResultProblem("Failed to render mermaid image. Error: {0}", errorMessage);
-                }
-
-                if (process?.ExitCode == 127)
-                {
-                    return new ResultProblem(
-                        "Mermaid CLI not found. Please install it with 'npm install -g @mermaid-js/mermaid-cli'");
-                }
-
-                var exitCode = process?.ExitCode.ToString() ?? "null";
-                return new ResultProblem("Failed to render mermaid image. Process exited with code: {0}", exitCode);
-            }
-
-            Assert.That(mermaidImageOutputPath.Exists, "Mermaid image output path does not exist after rendering: '{0}'");
-
-            return Result.Success();
+            await (Process.Start(psi)?.WaitForExitAsync(ct) ?? System.Threading.Tasks.Task.CompletedTask);
+#endif
         }
-        catch (Exception e)
+
+        DockerRunOperation.Request dockerRunRequest = new(MermaidCliImage)
         {
-            return new ResultProblem(e, "Failed to render mermaid image");
-        }
+            Name = "mermaid",
+            Arguments =
+            [
+                "-i " + DockerSourcePath.Name,
+                "-o " + DockerOutputPath.Name,
+                "-t " + Theme,
+                "-b " + BackgroundColor
+            ],
+            PathBindings =
+            [
+                new PathBinding(request.SourcePath, DockerSourcePath),
+                new PathBinding(request.OutputPath, DockerOutputPath)
+            ]
+        };
+
+        var result = await dockerRunOperation.ExecuteAsync(dockerRunRequest, ct);
+
+        return result;
     }
 }

@@ -5,11 +5,11 @@ using Path = Olve.Paths.Path;
 
 namespace TaskDrawer.CLI;
 
-public class TaskFileToGraphImageOperation : IOperation<TaskFileToGraphImageOperation.Request>
+public class TaskFileToGraphImageOperation(RenderMermaidOperation renderMermaidOperation) : IAsyncOperation<TaskFileToGraphImageOperation.Request>
 {
     public record Request(IPath InputPath, IPath OutputPath, IPath? MermaidPath = null, bool Overwrite = false);
 
-    public Result Execute(Request request)
+    public async Task<Result> ExecuteAsync(Request request, CancellationToken ct = default)
     {
         if (request.InputPath.Exists() == false)
         {
@@ -46,11 +46,14 @@ public class TaskFileToGraphImageOperation : IOperation<TaskFileToGraphImageOper
         
         var mermaidPath = request.MermaidPath ?? GetTempPath();
         
-        File.WriteAllText(mermaidPath.Path, mermaidSource.Source);
+        await File.WriteAllTextAsync(mermaidPath.Path, mermaidSource.Source, ct);
         
         Console.WriteLine("Mermaid source written to: {0}", mermaidPath.GetLinkString());
 
-        return MermaidRenderer.RenderMermaid(mermaidPath, request.OutputPath, request.Overwrite);
+        RenderMermaidOperation.Request renderMermaidRequest = new(mermaidPath, request.OutputPath, request.Overwrite);
+        var result = await renderMermaidOperation.ExecuteAsync(renderMermaidRequest, ct);
+
+        return result.IfProblem(p => p.Append(new ResultProblem("could not turn graph file into diagram")));
     }
     
     private IPath GetTempPath()

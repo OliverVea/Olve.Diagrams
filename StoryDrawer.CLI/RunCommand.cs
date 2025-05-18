@@ -4,7 +4,7 @@ using Path = Olve.Paths.Path;
 
 namespace TaskDrawer.CLI;
 
-public class RunCommand : Command<RunCommand.Settings>
+public class RunCommand : AsyncCommand<RunCommand.Settings>
 {
     public enum RunMode
     {
@@ -28,8 +28,8 @@ public class RunCommand : Command<RunCommand.Settings>
         [CommandOption("-m|--mode")]
         public RunMode Mode { get; set; } = RunMode.Default;
     }
-    
-    public override int Execute(CommandContext context, Settings settings)
+
+    public override Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
         var input = Path.Create(settings.Input);
         var output = Path.Create(settings.Output);
@@ -37,27 +37,27 @@ public class RunCommand : Command<RunCommand.Settings>
 
         return settings.Mode switch
         {
-            RunMode.Default => ExecuteSingle(input, output, mermaid),
-            RunMode.Overwrite => ExecuteSingle(input, output, mermaid, true),
+            RunMode.Default => ExecuteSingleAsync(input, output, mermaid),
+            RunMode.Overwrite => ExecuteSingleAsync(input, output, mermaid, true),
             RunMode.Watch => ExecuteWatch(input, output, mermaid),
             _ => throw new ArgumentOutOfRangeException()
         };
     }
 
-    private static int ExecuteSingle(IPath input, IPath output, IPath? mermaid, bool overwrite = false)
+    private static Task<int> ExecuteSingleAsync(IPath input, IPath output, IPath? mermaid, bool overwrite = false, CancellationToken ct = default)
     {
         TaskFileToGraphImageOperation.Request request = new(input, output, mermaid, overwrite);
         
         var operation = CommandHelper.GetOperation<TaskFileToGraphImageOperation>();
-        return CommandHelper.ExecuteOperation(operation, request);
+        return CommandHelper.ExecuteOperationAsync(operation, request, ct);
     }
 
-    private static int ExecuteWatch(IPath input, IPath output, IPath? mermaid)
+    private static Task<int> ExecuteWatch(IPath input, IPath output, IPath? mermaid, CancellationToken ct = default)
     {
         WatchTaskFileToGraphImageOperation.Request request = new(input, output, mermaid);
         
         var operation = CommandHelper.GetOperation<WatchTaskFileToGraphImageOperation>();
-        return CommandHelper.ExecuteOperation(operation, request);
+        return CommandHelper.ExecuteOperationAsync(operation, request, ct);
     }
     
 }

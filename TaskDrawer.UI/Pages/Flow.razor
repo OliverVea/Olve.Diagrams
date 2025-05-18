@@ -1,0 +1,120 @@
+﻿@using MermaidJS.Blazor;
+@using Olve.Results
+@inject IJSRuntime JsRuntime;
+@inject NavigationManager NavigationManager
+@page "/flow"
+@page "/flow/{UrlString}"
+
+<PageTitle>Flowchart Editor</PageTitle>
+
+<nav>
+    <navsection class="jl">
+        <button @onclick="Home">
+            Back
+        </button>
+    </navsection>
+    <navsection class="jc">
+        <span>Flowchart Editor</span>
+    </navsection>
+    <navsection class="jr">
+        <button @onclick="ToggleSource">
+            @(_showMermaidSource ? "Hide Code" : "Show Code")
+        </button>
+        <button @onclick="Share">
+            Share
+        </button>
+    </navsection>
+</nav>
+
+<content>
+    <input-content>
+        <textarea name="message" @bind="_graphCode" @bind:event="oninput"></textarea>
+    </input-content>
+
+    <output-content>
+        <output-image>
+            @if ((_mermaidResult = ConvertToMermaid(_graphCode)).TryPickValue(out var mermaidCode, out var mermaidProblems))
+            {
+                <MermaidDiagram Definition="@mermaidCode"/>
+            }
+            else
+            {
+                @foreach (var problem in mermaidProblems)
+                {
+                    <span>@problem.ToBriefString()</span>
+                }
+            }
+        </output-image>
+            @if (_showMermaidSource && _mermaidResult.TryPickValue(out mermaidCode))
+            {
+                <output-mermaid>
+                <textarea name="message" disabled>@mermaidCode</textarea>
+                </output-mermaid>
+            }
+    </output-content>
+</content>
+
+@code {
+    private Result<string> _mermaidResult;
+    private const string GraphCodeDefault = "1. (done) get up\n2. make breakfast\n  a. eggs and bacon [1]\n  b. coffee [1]\n3. go to work [2]";
+
+    private string _graphCode = string.Empty;
+
+    [Parameter] public string? UrlString { get; set; }
+    
+    private bool _showMermaidSource = false;
+
+    private void ToggleSource() =>
+        _showMermaidSource = !_showMermaidSource;
+
+    protected override void OnParametersSet()
+    {
+        if (!string.IsNullOrWhiteSpace(UrlString))
+        {
+            try
+            {
+                var encodedBytes = Convert.FromBase64String(UrlString.Replace('-', '+').Replace('_', '/'));
+                _graphCode = System.Text.Encoding.UTF8.GetString(encodedBytes);
+                return;
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Error decoding URL string. Falling back to default.");
+            }
+        }
+
+        _graphCode = GraphCodeDefault;
+    }
+
+    private static Result<string> ConvertToMermaid(string graph)
+    {
+        var taskList = graph.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+        var taskResult = TaskListParser.ParseTasks(taskList);
+        if (taskResult.TryPickProblems(out var problems, out var tasks))
+        {
+            return problems;
+        }
+
+        var mermaidResult = MermaidGenerator.GenerateMermaidSource(tasks);
+        if (mermaidResult.TryPickProblems(out problems, out var mermaidSource))
+        {
+            return problems;
+        }
+
+        return mermaidSource.Source;
+    }
+
+    private async Task Share()
+    {
+        var bytes = System.Text.Encoding.UTF8.GetBytes(_graphCode);
+        var base64 = Convert.ToBase64String(bytes)
+            .Replace('+', '-')
+            .Replace('/', '_');
+        var url = NavigationManager.BaseUri + "flow/" + base64; 
+        await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", url);
+    }
+
+    private void Home() => NavigationManager.NavigateTo("/");
+
+}
