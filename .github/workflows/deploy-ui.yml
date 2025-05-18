@@ -15,23 +15,14 @@ jobs:
           submodules: true
           lfs: false
 
-#      - name: Set Release Mode
-#        uses: Nambers/ReplaceStringInFile@v1.3
-#        with:
-#          path: ${{ github.workspace }}/Site/Directory.Build.props
-#          oldString: 'DEVELOPMENT_MODE'
-#          newString: 'RELEASE_MODE'
-#
-#      - name: Link to production site
-#        uses: Nambers/ReplaceStringInFile@v1.3
-#        with:
-#          path: ${{ github.workspace }}/Site/FableForge/Constants.cs
-#          oldString: 'http://localhost:1313'
-#          newString: 'https://news.thefableforge.com'
-          
+      - name: Setup .NET 9 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
       - name: Build project
-        run: dotnet build  ${{ github.workspace }}/TaskDrawer.UI/TaskDrawer.UI.csproj --configuration Release
-      
+        run: dotnet build ${{ github.workspace }}/TaskDrawer.UI/TaskDrawer.UI.csproj --configuration Release
+
       - name: Build And Deploy
         id: deploy-site
         uses: Azure/static-web-apps-deploy@v1
@@ -40,5 +31,5 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "TaskDrawer.UI"
-          api_location: "" 
+          api_location: ""
           output_location: "wwwroot"
