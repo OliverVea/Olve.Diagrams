@@ -92,10 +92,7 @@ public static class TaskListParser
             }
         }
 
-        if (parentStack.TryPeek(out var parent))
-        {
-            id = parent.Name.Value + id;
-        }
+        parentStack.TryPeek(out var parent);
 
         return new Task(new TaskName(id), description)
         {

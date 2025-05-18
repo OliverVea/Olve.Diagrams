@@ -28,6 +28,11 @@
 
 <content>
     <input-content>
+        <command-line>
+            <button @onclick="SortTasks">
+                Sort
+            </button>
+        </command-line>
         <textarea name="message" @bind="_graphCode" @bind:event="oninput"></textarea>
     </input-content>
 
@@ -47,9 +52,7 @@
         </output-image>
             @if (_showMermaidSource && _mermaidResult.TryPickValue(out mermaidCode))
             {
-                <output-mermaid>
                 <textarea name="message" disabled>@mermaidCode</textarea>
-                </output-mermaid>
             }
     </output-content>
 </content>
@@ -62,7 +65,7 @@
 
     [Parameter] public string? UrlString { get; set; }
     
-    private bool _showMermaidSource = false;
+    private bool _showMermaidSource;
 
     private void ToggleSource() =>
         _showMermaidSource = !_showMermaidSource;
@@ -103,6 +106,21 @@
         }
 
         return mermaidSource.Source;
+    }
+
+    private void SortTasks()
+    {
+        var taskList = _graphCode.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+        var taskResult = TaskListParser.ParseTasks(taskList);
+        if (taskResult.TryPickProblems(out var problems, out var tasks))
+        {
+            return;
+        }
+
+        var sortedTasks = tasks.GetSortedTasks();
+
+        _graphCode = string.Join('\n', sortedTasks.Select(x => x.ToString()));
     }
 
     private async Task Share()
