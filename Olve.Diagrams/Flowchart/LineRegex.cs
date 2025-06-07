@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
 using Olve.Results;
 
-namespace TaskDrawer;
+namespace Olve.Diagrams.Flowchart;
 
 public static partial class LineRegex
 {

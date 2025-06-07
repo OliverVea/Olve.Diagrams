@@ -1,6 +1,6 @@
 using Olve.Results;
 
-namespace TaskDrawer;
+namespace Olve.Diagrams.Flowchart;
 
 public static class MermaidGenerator
 {

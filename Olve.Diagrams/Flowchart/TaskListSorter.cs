@@ -1,4 +1,4 @@
-namespace TaskDrawer;
+namespace Olve.Diagrams.Flowchart;
 
 public static class TaskListSorter
 {

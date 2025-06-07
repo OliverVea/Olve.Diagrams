@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace TaskDrawer;
+namespace Olve.Diagrams.Flowchart;
 
 public class Task(TaskName name, string description)
 {

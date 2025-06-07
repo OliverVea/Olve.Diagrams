@@ -1,0 +1,142 @@
+@using Olve.Results
+@inject IJSRuntime JsRuntime;
+@inject NavigationManager NavigationManager
+@page "/timeline"
+@page "/timeline/{UrlString}"
+
+<PageTitle>Timeline Editor</PageTitle>
+
+<nav>
+    <navsection class="jl">
+        <button @onclick="Home">
+            Back
+        </button>
+    </navsection>
+    <navsection class="jc">
+        <span>Timeline Editor</span>
+    </navsection>
+    <navsection class="jr">
+        <button @onclick="ToggleSource">
+            @(_showSvgCode ? "Hide Code" : "Show Code")
+        </button>
+        <button @onclick="Share">
+            Share
+        </button>
+    </navsection>
+</nav>
+
+<content>
+    <input-content>
+        <textarea name="message" @bind="_timelineCode" @bind:event="oninput"></textarea>
+    </input-content>
+
+    <output-content>
+        <output-image>
+            @if ((_svgResult = ConvertToSvg(_timelineCode)).TryPickValue(out var svgCode, out var problems))
+            {
+                <svg width="600" height="100" xmlns="http://www.w3.org/2000/svg">
+                    @svgCode
+                </svg>
+            }
+            else
+            {
+                @foreach (var problem in problems)
+                {
+                    <span>@problem.ToBriefString()</span>
+                }
+            }
+        </output-image>
+            @if (_showSvgCode && _svgResult.TryPickValue(out svgCode))
+            {
+                <textarea name="message" disabled>@svgCode</textarea>
+            }
+    </output-content>
+</content>
+
+@code {
+    private Result<RenderFragment> _svgResult;
+    private const string TimelineCodeDefault = "1. (done) get up\n2. make breakfast\n  a. eggs and bacon [1]\n  b. coffee [1]\n3. go to work [2]";
+
+    private string _timelineCode = string.Empty;
+
+    [Parameter] public string? UrlString { get; set; }
+    
+    private bool _showSvgCode;
+
+    private void ToggleSource() =>
+        _showSvgCode = !_showSvgCode;
+
+    protected override void OnParametersSet()
+    {
+        if (!string.IsNullOrWhiteSpace(UrlString))
+        {
+            try
+            {
+                var encodedBytes = Convert.FromBase64String(UrlString.Replace('-', '+').Replace('_', '/'));
+                _timelineCode = System.Text.Encoding.UTF8.GetString(encodedBytes);
+                return;
+            }
+            catch (FormatException e)
+            {
+                Console.WriteLine("Error decoding URL string. Falling back to default. Error: " + e.Message);
+            }
+        }
+
+        _timelineCode = TimelineCodeDefault;
+    }
+
+    /*
+    <line x1=""50"" y1=""50"" x2=""550"" y2=""50"" stroke=""black"" stroke-width=""2""/>
+
+    <!-- Events -->
+    <circle cx=""100"" cy=""50"" r=""8"" fill=""dodgerblue""/>
+    <circle cx=""300"" cy=""50"" r=""8"" fill=""dodgerblue""/>
+    <circle cx=""500"" cy=""50"" r=""8"" fill=""dodgerblue""/>
+
+    <!-- Labels -->
+    <text x=""100"" y=""80"" font-size=""14"" text-anchor=""middle"">Start</text>
+    <text x=""300"" y=""80"" font-size=""14"" text-anchor=""middle"">Middle</text>
+    <text x=""500"" y=""80"" font-size=""14"" text-anchor=""middle"">End</text>";
+    */
+    private static Result<RenderFragment> ConvertToSvg(string timelineCode)
+    {
+        var lines = timelineCode.Split('\n');
+        var svgContent = new List<string>();
+        int x = 50, y = 50;
+        int stepX = 200; // Horizontal step between events
+
+        foreach (var line in lines)
+        {
+            if (string.IsNullOrWhiteSpace(line)) continue;
+
+            var parts = line.Split(new[] { ' ' }, 2);
+            if (parts.Length < 2) continue;
+
+            var label = parts[1].Trim();
+            svgContent.Add($"<circle cx=\"{x}\" cy=\"{y}\" r=\"8\" fill=\"dodgerblue\"/>");
+            svgContent.Add($"<text x=\"{x}\" y=\"{y + 30}\" font-size=\"14\" text-anchor=\"middle\">{label}</text>");
+            x += stepX;
+        }
+
+        return Result.Success((RenderFragment)(builder =>
+        {
+            foreach (var content in svgContent)
+            {
+                builder.AddMarkupContent(0, content);
+            }
+        }));
+    }
+
+    private async System.Threading.Tasks.Task Share()
+    {
+        var bytes = System.Text.Encoding.UTF8.GetBytes(_timelineCode);
+        var base64 = Convert.ToBase64String(bytes)
+            .Replace('+', '-')
+            .Replace('/', '_');
+        var url = NavigationManager.BaseUri + "flow/" + base64; 
+        await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", url);
+    }
+
+    private void Home() => NavigationManager.NavigateTo("/");
+
+}

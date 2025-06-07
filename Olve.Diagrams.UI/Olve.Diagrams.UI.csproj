@@ -13,7 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\StoryDrawer\StoryDrawer.csproj" />
+      <ProjectReference Include="..\Olve.Diagrams\Olve.Diagrams.csproj" />
     </ItemGroup>
 
 </Project>

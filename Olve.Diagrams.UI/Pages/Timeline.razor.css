@@ -1,0 +1,128 @@
+button {
+    color: #fff;
+    background-color: #323232;
+    border: 1px solid #717171;
+    border-radius: 4px;
+    padding: 4px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+button:hover {
+    background-color: #434343;
+    color: #fff;
+}
+button:active {
+    background-color: #535353;
+    color: #fff;
+}
+
+nav button {
+    padding: 10px 20px;
+    background-color: #434343;
+}
+
+nav button:hover {
+    background-color: #535353;
+}
+
+nav button:active {
+    background-color: #717171;
+}
+
+nav {
+    display: grid;
+    grid-template-columns: 33% 33% 33%;
+    flex-grow: 0;
+    justify-content: space-between;
+    background-color: #313131;
+    padding: 10px 20px;
+    color: #aaa;
+    font-weight: bold;
+}
+
+navsection {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.jl {
+    justify-self: left;
+}
+
+.jc {
+    justify-self: center;
+}
+
+.jr {
+    justify-self: right;
+}
+
+content {
+    padding: 1rem;
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+}
+
+command-line {
+    display: flex;
+    flex-direction: row;
+    gap: 4px;
+}
+
+input-content {
+    flex-grow: 1;
+    flex-shrink: 0;
+    gap: 8px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+output-content {
+    flex-grow: 1;
+    flex-shrink: 0;
+    overflow: auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+output-image {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+    overflow: auto;
+    height: 100%;
+}
+
+output-content textarea {
+    color: #ccc;
+    flex-grow: 1;
+    overflow: auto;
+    height: 100%;
+}
+
+textarea {
+    flex-grow: 1;
+    width: calc(100% - 30px);
+    border: 1px solid #434343;
+    background-color: #313131;
+    color: #fff;
+    border-radius: 4px;
+    padding: 10px;
+    resize: none;
+    min-width: 30vw;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: #717171;
+}
