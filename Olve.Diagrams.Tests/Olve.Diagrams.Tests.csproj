@@ -9,10 +9,18 @@
     
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
+        <PackageReference Include="TUnit" Version="0.25.6" />
+        <PackageReference Include="Olve.Paths.Glob" Version="0.22.2" />
     </ItemGroup>
     
     <ItemGroup>
       <ProjectReference Include="..\Olve.Diagrams\Olve.Diagrams.csproj" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <None Update="testdata/**/*">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

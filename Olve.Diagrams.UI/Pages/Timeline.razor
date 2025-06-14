@@ -1,6 +1,9 @@
+@using Microsoft.AspNetCore.Components.Rendering
+@using Olve.Diagrams.Timelines
 @using Olve.Results
 @inject IJSRuntime JsRuntime;
 @inject NavigationManager NavigationManager
+@inject TimelineDeserializer TimelineDeserializer;
 @page "/timeline"
 @page "/timeline/{UrlString}"
 
@@ -32,11 +35,9 @@
 
     <output-content>
         <output-image>
-            @if ((_svgResult = ConvertToSvg(_timelineCode)).TryPickValue(out var svgCode, out var problems))
+            @if ((_svgResult = ConvertToSvg(_timelineCode)).TryPickValue(out var svgRenderFragment, out var problems))
             {
-                <svg width="600" height="100" xmlns="http://www.w3.org/2000/svg">
-                    @svgCode
-                </svg>
+                @svgRenderFragment
             }
             else
             {
@@ -46,21 +47,21 @@
                 }
             }
         </output-image>
-            @if (_showSvgCode && _svgResult.TryPickValue(out svgCode))
+            @if (_showSvgCode && _svgResult.TryPickValue(out svgRenderFragment))
             {
-                <textarea name="message" disabled>@svgCode</textarea>
+                <textarea name="message" disabled>@svgRenderFragment</textarea>
             }
     </output-content>
 </content>
 
 @code {
     private Result<RenderFragment> _svgResult;
-    private const string TimelineCodeDefault = "1. (done) get up\n2. make breakfast\n  a. eggs and bacon [1]\n  b. coffee [1]\n3. go to work [2]";
+    private const string TimelineCodeDefault = "version: 1.0\ntitle: My Timeline\nend: 2000-01-01\n---\nv 1850-07-04 Declaration\n^ 1900-01-01 Industrialization\nv 1999-12-31 Millennium Eve";
 
     private string _timelineCode = string.Empty;
 
     [Parameter] public string? UrlString { get; set; }
-    
+
     private bool _showSvgCode;
 
     private void ToggleSource() =>
@@ -85,46 +86,106 @@
         _timelineCode = TimelineCodeDefault;
     }
 
-    /*
-    <line x1=""50"" y1=""50"" x2=""550"" y2=""50"" stroke=""black"" stroke-width=""2""/>
-
-    <!-- Events -->
-    <circle cx=""100"" cy=""50"" r=""8"" fill=""dodgerblue""/>
-    <circle cx=""300"" cy=""50"" r=""8"" fill=""dodgerblue""/>
-    <circle cx=""500"" cy=""50"" r=""8"" fill=""dodgerblue""/>
-
-    <!-- Labels -->
-    <text x=""100"" y=""80"" font-size=""14"" text-anchor=""middle"">Start</text>
-    <text x=""300"" y=""80"" font-size=""14"" text-anchor=""middle"">Middle</text>
-    <text x=""500"" y=""80"" font-size=""14"" text-anchor=""middle"">End</text>";
-    */
-    private static Result<RenderFragment> ConvertToSvg(string timelineCode)
+    private Result<RenderFragment> ConvertToSvg(string timelineCode)
     {
-        var lines = timelineCode.Split('\n');
-        var svgContent = new List<string>();
-        int x = 50, y = 50;
-        int stepX = 200; // Horizontal step between events
+        return Result.Chain(
+            () => TimelineDeserializer.Deserialize(timelineCode),
+            RenderTimeline);
+    }
 
-        foreach (var line in lines)
+    private Result<RenderFragment> RenderTimeline(Olve.Diagrams.Timelines.Timeline timeline)
+    {
+        if (Result.Concat(() => timeline.Start, () => timeline.End).TryPickProblems(out var problems, out var startAndEnd))
         {
-            if (string.IsNullOrWhiteSpace(line)) continue;
-
-            var parts = line.Split(new[] { ' ' }, 2);
-            if (parts.Length < 2) continue;
-
-            var label = parts[1].Trim();
-            svgContent.Add($"<circle cx=\"{x}\" cy=\"{y}\" r=\"8\" fill=\"dodgerblue\"/>");
-            svgContent.Add($"<text x=\"{x}\" y=\"{y + 30}\" font-size=\"14\" text-anchor=\"middle\">{label}</text>");
-            x += stepX;
+            return problems;
         }
 
-        return Result.Success((RenderFragment)(builder =>
+        var (start, end) = startAndEnd;
+
+        var totalDays = (end - start).TotalDays;
+
+        const int svgWidth = 800;
+        const int svgHeight = 400;
+        const int margin = 100;
+        const int lineY = 200;
+
+        return Result.Success((RenderFragment)Fragment);
+
+        void Fragment(RenderTreeBuilder builder)
         {
-            foreach (var content in svgContent)
+            var seq = 0;
+
+            builder.OpenElement(seq++, "svg");
+            builder.AddAttribute(seq++, "xmlns", "http://www.w3.org/2000/svg");
+            builder.AddAttribute(seq++, "width", svgWidth);
+            builder.AddAttribute(seq++, "height", svgHeight);
+
+            // Timeline line
+            builder.OpenElement(seq++, "line");
+            builder.AddMultipleAttributes(seq++, new Dictionary<string, object>
             {
-                builder.AddMarkupContent(0, content);
+                { "x1", margin },
+                { "y1", lineY },
+                { "x2", svgWidth - margin },
+                { "y2", lineY },
+                { "stroke", "white" },
+                { "stroke-width", 2 }
+            });
+            builder.CloseElement();
+
+            // Entry points
+            foreach (var entry in timeline.Entries)
+            {
+                var x = MapDate(entry.DateTime);
+
+                // Dot
+                builder.OpenElement(seq++, "circle");
+                builder.AddMultipleAttributes(seq++, new Dictionary<string, object>
+                {
+                    { "cx", x },
+                    { "cy", lineY },
+                    { "r", 5 },
+                    { "fill", "red" }
+                });
+                builder.CloseElement();
+                builder.OpenElement(seq++, "text");
+
+                var rotation = entry.Direction switch
+                {
+                    TimelineEntryDirection.Up => -45,
+                    TimelineEntryDirection.Down => 45,
+                };
+
+                var textY = entry.Direction switch
+                {
+                    TimelineEntryDirection.Up => lineY - 10,
+                    TimelineEntryDirection.Down => lineY + 16
+                };
+
+                var transform = $"rotate({rotation}, {x}, {textY})";
+
+                builder.AddMultipleAttributes(seq++, new Dictionary<string, object>
+                {
+                    { "x", x },
+                    { "y", textY },
+                    { "transform", transform },
+                    { "text-anchor", "start" },
+                    { "font-size", "12" },
+                    { "fill", "white" },
+                });
+                builder.AddContent(seq++, entry.Title);
+                builder.CloseElement();
             }
-        }));
+
+            builder.CloseElement(); // svg
+        }
+
+        int MapDate(DateTime date)
+        {
+            var days = (date - start).TotalDays;
+            var ratio = days / totalDays;
+            return margin + (int)((svgWidth - 2 * margin) * ratio);
+        }
     }
 
     private async System.Threading.Tasks.Task Share()
@@ -133,7 +194,7 @@
         var base64 = Convert.ToBase64String(bytes)
             .Replace('+', '-')
             .Replace('/', '_');
-        var url = NavigationManager.BaseUri + "flow/" + base64; 
+        var url = NavigationManager.BaseUri + "timeline/" + base64; 
         await JsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", url);
     }
 

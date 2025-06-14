@@ -1,7 +1,7 @@
 using Olve.Diagrams.Flowchart;
 using Olve.Results;
 
-namespace TaskDrawer.Tests;
+namespace Olve.Diagrams.Tests;
 
 public class Program
 {
@@ -15,7 +15,8 @@ public class Program
                         3. present for the ceo [2]
                         """;
     
-    public static int Main()
+    [Test]
+    public System.Threading.Tasks.Task Test()
     {
         var result = Run();
         if (result.TryPickProblems(out var problems))
@@ -25,10 +26,10 @@ public class Program
                 Console.WriteLine(problem.ToDebugString());
             }
             
-            return -1;
+            Assert.Fail("Test failed with problems.");
         }
         
-        return 0;
+        return System.Threading.Tasks.Task.CompletedTask;
     }
 
     private static Result Run()
