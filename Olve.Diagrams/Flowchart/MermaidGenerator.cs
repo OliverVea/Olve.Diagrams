@@ -12,7 +12,7 @@ public static class MermaidGenerator
     private const string MermaidTemplate = """
                                            graph BT
                                                {{~ for task in Tasks ~}}
-                                               {{ task.name }}["**{{ task.name }}:** {{ task.description }}"]
+                                               {{ task.name }}["{{ task.name }}: {{ task.description }}"]
                                                {{~ end ~}}
                                            
                                                {{~ for task in Tasks ~}}
