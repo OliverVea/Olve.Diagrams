@@ -4,6 +4,7 @@ Repository layout:
 - Olve.Diagrams.UI: Blazor WebAssembly UI using the library.
 - Olve.Diagrams.Tests: Unit tests for the library.
 - TaskDrawer.sln: solution including library, tests and UI.
+- Flowchart tasks can include '(done)' and '(blocked)' states.
 
 Coding guidelines:
 - Use conventional commits (feat:, fix:, chore: etc.).

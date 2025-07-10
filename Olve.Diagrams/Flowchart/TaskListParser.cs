@@ -83,6 +83,7 @@ public static class TaskListParser
         var blockers = ParseBlockers(regexMatch.Blockers);
         var level = regexMatch.Indentation.Length / IndentationWidth;
         var done = regexMatch.Done;
+        var blockedExplicit = regexMatch.Blocked;
         
         while (parentStack.Count > level)
         {
@@ -97,6 +98,7 @@ public static class TaskListParser
         return new Task(new TaskName(id), description)
         {
             Done = done,
+            ExplicitBlocked = blockedExplicit,
             Parent = parent,
             Blockers = blockers
         };

@@ -20,10 +20,11 @@ public static partial class LineRegex
             match.Groups["indent"].Value,
             match.Groups["id"].Value[0..^1],
             match.Groups["done"].Success,
+            match.Groups["blocked"].Success,
             match.Groups["desc"].Value,
             match.Groups["blockers"].Value);
     }
     
-    [GeneratedRegex(@"(?<indent>\s*)(?<id>(?:\d+\.)|(?:[a-z]\.))\s*(?:(?<done>\(done\))\s*)?(?<desc>.*?)\s*(?=\s*\[|$)\s*(?<blockers>(?:\s*\[[^\]]+\])*)\s*", RegexOptions.IgnoreCase | RegexOptions.Compiled, "en-US")]
+    [GeneratedRegex(@"(?<indent>\s*)(?<id>(?:\d+\.)|(?:[a-z]\.))\s*(?:(?<done>\(done\))\s*)?(?:(?<blocked>\(blocked\))\s*)?(?<desc>.*?)\s*(?=\s*\[|$)\s*(?<blockers>(?:\s*\[[^\]]+\])*)\s*", RegexOptions.IgnoreCase | RegexOptions.Compiled, "en-US")]
     public static partial Regex MyRegex();
 }
