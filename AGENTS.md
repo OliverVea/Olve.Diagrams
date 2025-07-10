@@ -5,7 +5,7 @@ Repository layout:
 - Olve.Diagrams.Tests: Unit tests for the library.
 - TaskDrawer.sln: solution including library, tests and UI.
 - Flowchart tasks can include '(done)' and '(blocked)' states.
-- Blocked tasks appear with a red 4px border in generated Mermaid diagrams.
+- Explicitly blocked tasks have a red 4px border in generated Mermaid diagrams; other blocked tasks keep the default border.
 
 Coding guidelines:
 - Use conventional commits (feat:, fix:, chore: etc.).

@@ -26,9 +26,9 @@ public static class MermaidGenerator
                                                {{~ end ~}}
                                                {{~ end ~}}
                                                
-                                               {{~ for task in Tasks ~}}
-                                               style {{ task.name }} fill:{{ if task.done }}{{ ColorDone }}{{ else if task.blocked }}{{ ColorBlocked }}{{ else }}{{ ColorNotDone }}{{ end }}{{ if task.blocked }},stroke:{{ BlockedBorderColor }},stroke-width:{{ BlockedBorderWidth }}{{ end }}
-                                               {{~ end ~}}
+                                                {{~ for task in Tasks ~}}
+                                                style {{ task.name }} fill:{{ if task.done }}{{ ColorDone }}{{ else if task.blocked }}{{ ColorBlocked }}{{ else }}{{ ColorNotDone }}{{ end }}{{ if task.explicitBlocked }},stroke:{{ BlockedBorderColor }},stroke-width:{{ BlockedBorderWidth }}{{ end }}
+                                                {{~ end ~}}
                                            """;
 
     public static Result<MermaidSource> GenerateMermaidSource(IReadOnlyList<Task> tasks)
@@ -46,6 +46,7 @@ public static class MermaidGenerator
             description = task.Description.Replace("\"", "\\\""),
             done = task.Done,
             blocked = task.Blocked,
+            explicitBlocked = task.ExplicitBlocked,
             parent = task.Parent?.Name.Value,
             subTasks = task.SubTasks.Select(s => s.Name.Value).ToList(),
             blockers = task.Blockers.Select(b => b.Name.Value).ToList()
