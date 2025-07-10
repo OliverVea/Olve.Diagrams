@@ -8,11 +8,14 @@ public class Task(TaskName name, string description)
     public string QualifiedName => string.Join("", Parents.Select(x => x.Name.Value));
     public string Description { get; } = description;
     public bool Done { get; set; }
+    public bool ExplicitBlocked { get; set; }
     public Task? Parent { get; set; }
     public List<Task> SubTasks { get; set; } = [];
     public Task[] Blockers { get; set; } = [];
-    
-    public bool Blocked => Blockers.Any(x => !x.Done) || SubTasks.Any(x => !x.Done);
+
+    public bool Blocked => ExplicitBlocked ||
+        Blockers.Any(x => x.Blocked || !x.Done) ||
+        SubTasks.Any(x => x.Blocked || !x.Done);
 
     public IEnumerable<Task> Parents => GetParents(this);
 
@@ -43,6 +46,11 @@ public class Task(TaskName name, string description)
         if (Done)
         {
             sb.Append("(done) ");
+        }
+
+        if (ExplicitBlocked)
+        {
+            sb.Append("(blocked) ");
         }
         
         sb.Append(Description);
