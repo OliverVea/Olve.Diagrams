@@ -8,6 +8,8 @@ public static class MermaidGenerator
     private const string ColorDone = "#272";
     private const string ColorNotDone = "#b91";
     private const string ColorBlocked = "#b00";
+    private const string BlockedBorderColor = "#f00";
+    private const string BlockedBorderWidth = "4px";
     
     private const string MermaidTemplate = """
                                            graph BT
@@ -25,7 +27,7 @@ public static class MermaidGenerator
                                                {{~ end ~}}
                                                
                                                {{~ for task in Tasks ~}}
-                                               style {{ task.name }} fill:{{ if task.done }}{{ ColorDone }}{{ else if task.blocked }}{{ ColorBlocked }}{{ else }}{{ ColorNotDone }}{{ end }}
+                                               style {{ task.name }} fill:{{ if task.done }}{{ ColorDone }}{{ else if task.blocked }}{{ ColorBlocked }}{{ else }}{{ ColorNotDone }}{{ end }}{{ if task.blocked }},stroke:{{ BlockedBorderColor }},stroke-width:{{ BlockedBorderWidth }}{{ end }}
                                                {{~ end ~}}
                                            """;
 
@@ -49,7 +51,7 @@ public static class MermaidGenerator
             blockers = task.Blockers.Select(b => b.Name.Value).ToList()
         }).ToList();
 
-        var context = new { Tasks = scribanTasks, ColorDone, ColorNotDone, ColorBlocked };
+        var context = new { Tasks = scribanTasks, ColorDone, ColorNotDone, ColorBlocked, BlockedBorderColor, BlockedBorderWidth };
         var rendered = template.Render(context, member => member.Name);
 
         return new MermaidSource(rendered);

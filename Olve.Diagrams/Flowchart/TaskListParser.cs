@@ -42,6 +42,8 @@ public static class TaskListParser
         void AddToLookup(Task task)
         {
             taskLookup[task.Name] = task;
+            taskLookup[new TaskName(task.QualifiedName)] = task;
+
             foreach (var subTask in task.SubTasks)
             {
                 AddToLookup(subTask);
