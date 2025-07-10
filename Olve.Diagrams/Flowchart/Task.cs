@@ -5,7 +5,7 @@ namespace Olve.Diagrams.Flowchart;
 public class Task(TaskName name, string description)
 {
     public TaskName Name { get; } = name;
-    public string QualifiedName => string.Join("", Parents.Select(x => x.Name.Value));
+    public string QualifiedName => string.Concat(Parents.Select(x => x.Name.Value)) + Name.Value;
     public string Description { get; } = description;
     public bool Done { get; set; }
     public bool ExplicitBlocked { get; set; }
@@ -21,8 +21,8 @@ public class Task(TaskName name, string description)
 
     private IEnumerable<Task> GetParents(Task task)
     {
-        if (Parent is not { } parent) return [];
-        
+        if (task.Parent is not { } parent) return [];
+
         return GetParents(parent).Append(parent);
     }
     

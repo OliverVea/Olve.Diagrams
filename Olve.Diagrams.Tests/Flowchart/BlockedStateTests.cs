@@ -6,7 +6,7 @@ namespace Olve.Diagrams.Tests.Flowchart;
 public class BlockedStateTests
 {
     [Test]
-    public async Task ExplicitBlocked_PropagatesToDependents()
+    public async System.Threading.Tasks.Task ExplicitBlocked_PropagatesToDependents()
     {
         string[] lines =
         {
